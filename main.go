@@ -64,7 +64,7 @@ func main() {
 	p := plugin.Plugin{
 		Commit: plugin.SimpleCommit(
 			"Update Puppetfile",
-			"update-puppetfile",
+			"cultivator/update-puppetfile",
 			"Update modules in Puppetfile based on latest Forge versions",
 			"update puppetfile modules",
 		),
