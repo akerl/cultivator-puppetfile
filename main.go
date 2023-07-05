@@ -57,8 +57,6 @@ func checkModule(repo string) (string, error) {
 	q.Add("sort_by", "release_date")
 	req.URL.RawQuery = q.Encode()
 
-	fmt.Println(req.URL.String())
-
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
