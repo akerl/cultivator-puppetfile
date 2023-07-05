@@ -4,6 +4,8 @@ name: Build
   push:
     branches:
     - main
+    tags:
+    - '**'
   pull_request_target:
 jobs:
   build:
