@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"regexp"
 
 	"github.com/akerl/cultivator/plugin"
@@ -39,12 +40,26 @@ type release struct {
 	Version string `json:"version"`
 }
 
-type module struct {
-	CurrentRelease release `json:"current_release"`
+type releases struct {
+	Results []release `json:"results"`
 }
 
 func checkModule(repo string) (string, error) {
-	resp, err := http.Get(fmt.Sprintf("https://forgeapi.puppet.com/v3/modules/%s", repo))
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://forgeapi.puppet.com/v3/releases", nil)
+	if err != nil {
+		return "", err
+	}
+
+	q := url.Values{}
+	q.Add("module", repo)
+	q.Add("limit", "1")
+	q.Add("sort_by", "release_date")
+	req.URL.RawQuery = q.Encode()
+
+	fmt.Println(req.URL.String())
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -52,12 +67,15 @@ func checkModule(repo string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	var m module
-	err = json.Unmarshal(body, &m)
+	var rs releases
+	err = json.Unmarshal(body, &rs)
 	if err != nil {
 		return "", err
 	}
-	return m.CurrentRelease.Version, nil
+	if len(rs.Results) != 1 {
+		return "", fmt.Errorf("somehow got more or less than one release for %s", repo)
+	}
+	return rs.Results[0].Version, nil
 }
 
 func main() {
